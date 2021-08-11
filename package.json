@@ -12,6 +12,7 @@
   "author": "ridhdhish",
   "license": "ISC",
   "dependencies": {
+    "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "web3": "^1.4.0"
   }
