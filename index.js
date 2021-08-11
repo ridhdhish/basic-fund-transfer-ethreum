@@ -12,6 +12,8 @@ const contract = new web3.eth.Contract(
   CoinABI.networks[5777].address
 );
 
+const contractAddress = CoinABI.networks[5777].address;
+
 const address1 = "0x08B36F3C2fDad892310f47c30Fca4FF0eff57791";
 const address2 = "0xfAaDd3d580888E1980967E1b723ba83E62C50F7C";
 const address3 = "0x69DED00c4dDBd0784771F687c31d0e41A97805fA";
@@ -42,42 +44,42 @@ const main = async () => {
 
   // Explicitly creates new transaction and send it to ethereum's mainet.
   const transferFund = async () => {
-    // Returns 32-bit hex string of contract-method with
-    // its parameters tightly formatted.
-    const data = await contract.methods
-      .transfer(address1, address2, 359)
-      .encodeABI();
+    await web3.eth.getTransactionCount(address1, async (err, txCount) => {
+      // Returns 32-bit hex string of contract-method with
+      // its parameters tightly formatted.
+      const data = await contract.methods
+        .transfer(address1, address2, 359)
+        .encodeABI();
 
-    const txObject = {
-      gasLimit: web3.utils.toHex(800000),
-      gasProcce: web3.utils.toHex(100000),
-      nonce: web3.utils.toHex(215),
-      to: CoinABI.networks[5777].address,
-      data: data,
-      value: web3.utils.toHex(100),
-    };
+      const txObject = {
+        gasLimit: web3.utils.toHex(800000),
+        gasPrice: web3.utils.toHex(100000),
+        nonce: txCount,
+        to: contractAddress,
+        data: data,
+      };
 
-    // Creates new transaction object.
-    const tx = Transaction.fromTxData(txObject, { common });
-    const signedTx = tx.sign(privateKey);
+      // Creates new transaction object.
+      const tx = Transaction.fromTxData(txObject, { common });
+      const signedTx = tx.sign(privateKey);
 
-    // Serialize the transaction object
-    const serializeTx = signedTx.serialize();
-    const raw = "0x" + serializeTx.toString("hex");
+      // Serialize the transaction object
+      const serializeTx = signedTx.serialize();
+      const raw = "0x" + serializeTx.toString("hex");
 
-    // Send it to the ethereum mainet.
-    web3.eth.sendSignedTransaction(raw, (err, data) => {
-      console.log("Err: ", err, " Data: ", data);
+      // Send it to the ethereum mainet.
+      web3.eth.sendSignedTransaction(raw, (err, data) => {
+        console.log("Err: ", err, " Data: ", data);
+      });
     });
-
-    // Checking balance after making the transaction.
-    const balance = await contract.methods.balances(address2).call();
-    console.log("Balance of Address2 after tansaction: ", balance);
-    const remainingBalance = await contract.methods.balances(address1).call();
-    console.log("Balance of Address1 after tansaction: ", remainingBalance);
   };
 
   await transferFund();
+
+  const balance = await contract.methods.balances(address2).call();
+  console.log("Balance of Address2 after tansaction: ", balance);
+  const remainingBalance = await contract.methods.balances(address1).call();
+  console.log("Balance of Address1 after tansaction: ", remainingBalance);
 };
 
 main();
